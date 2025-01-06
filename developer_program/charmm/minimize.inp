@@ -1,0 +1,62 @@
+*  compute first derivatives, and minimize structure OLD VERSION!!
+* 
+
+! read topology and parameters
+stream toppar.inp
+
+! create a solute molecule
+read sequence tmp 1
+generate AAAA setup first none last none warn
+ 
+! read optimized coordinates for the solute
+open read card unit 20 name "opt1.pdb"
+read coord pdb unit 20 resid
+coor copy comp
+
+update inbfrq -1 ihbfrq 0 -
+atom switch vatom vfswitch cutnb 999.0 ctofnb 900.0 ctonnb 800.0
+
+
+stream restrdihe.inp
+
+mini sd     nstep 200 nprint 50
+mini powell nstep 200 nprint 50
+mini abnr   nstep 300 nprint 50
+
+coor orient rms sele .not. type lp* end
+
+! save empirical coordinates
+open write card unit 10 name "emp.pdb"
+write  coor pdb unit 10
+* ?rms
+*
+
+! save empirical coordinates // used by Developer
+open write card unit 10 name "emp.card"
+write  coor card unit 10
+close unit 10
+
+cons cldh
+
+! optimize 
+mini sd     nstep 300 nprint 50
+mini powell nstep 200 nprint 50
+mini abnr  nstep  300 nprint 50
+
+coor orient rms sele .not. type lp* end
+! save geometry optimized without constraints // not used by Developer
+open write card unit 10 name "emp.woconstr.pdb"
+write  coor pdb unit 10
+* ?rms
+*
+
+
+stop
+
+
+!!open write card unit 9 name "molecule.psf"
+!!write psf card unit 9
+!!close unit 9
+
+!open write form unit 4 name first.dat
+!test first tol 0.0 unit 4

@@ -1,0 +1,109 @@
+*  optimize and compute energies for target structures
+* 
+
+! read topology and parameters
+stream toppar.inp
+
+! create a solute molecule
+read sequence tmp 1
+generate aaaa setup first none last none warn
+ 
+! write out energies on pes
+open write form unit 90 name target-str.dat
+
+! read optimized coordinates for the solute
+open read card unit 20 name opt1.pdb
+read coord pdb unit 20 resid
+coor copy comp
+
+update inbfrq -1 ihbfrq 0 -
+atom switch vatom vfswitch cutnb 999.0 ctofnb 900.0 ctonnb 800.0
+
+! constraints
+!!stream restraints.str
+stream target-str.str
+
+! loop over structures 
+set istr = 0
+label strs
+
+    ! read qm structure 
+    open read card unit 4 name @{folderStr}/@istr.pdb
+    read coor pdb unit 4
+    close unit 4
+    coor copy comp
+
+    ! apply constraints
+    set idihe = 1
+    label diheconstraint
+        set a1 = @{a1_@@idihe}
+        set a2 = @{a2_@@idihe}
+        set a3 = @{a3_@@idihe}
+        set a4 = @{a4_@@idihe}
+        define atm1 sele type @{a1} end
+        define atm2 sele type @{a2} end
+        define atm3 sele type @{a3} end
+        define atm4 sele type @{a4} end
+        quick AAAA 1 @{a1} AAAA 1 @{a2} AAAA 1 @{a3} AAAA 1 @{a4}
+        set vqm = ?phi
+        ! apply constraint
+        mmfp
+        geo maxgeo 100 sphere  dihedral -
+            harmonic symmetric force 100000.0 tref @{vqm} dtoff 0.0 -
+            select atm1 end select atm2 end -
+            select atm3 end select atm4 end
+        end
+        incr idihe by 1
+    if @idihe .le. @ND goto diheconstraint
+        
+    ! minimization
+    skip excl all
+    mini sd     nstep 1000 nprint 100
+    mini powell nstep 2000 nprint 100
+    mini abnr   nstep 5000 nprint 100
+
+    ! mesure structural deviations
+    coor orient rms comp sele .not. type lp* end
+    set strrms = ?rms
+
+    ! save the emprical structure
+    set fsavestruct = 1
+    if @fsavestruct eq 1 then
+        open write card unit 3 name results/target-str@istr.pdb
+        write coor pdb unit 3
+        *@strrms
+        *
+        
+        close unit 3        
+    endif
+
+
+    ! get energy without constraints
+    skip incl all excl bonds angle urey dihe impr vdw elec 
+    energy
+    set e = ?ener
+    
+    ! write energy
+    write title unit 90
+    *@istr @e @strrms
+    *
+    
+    mmfp
+    geo reset
+    end        
+
+    incr istr by 1 
+if @istr .lt. @nstr goto strs
+
+stop
+
+        !!open write card unit 3 name results/@{term@@iterm}-@istr.card
+        !!write coor card unit 3
+        !!close unit 3
+
+    ! remove all constrants and read new
+    !!!cons cldh
+    !!cons rmsd  clear
+    !!cons rmsd  comp  force 500.0  boffset 0.0
+
+

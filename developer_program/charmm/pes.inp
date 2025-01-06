@@ -1,0 +1,161 @@
+* Perform adiabatic PES scan
+* Anastasia Croitoru and Alexey Aleksandrov 12/2021
+* 
+
+! read topology and parameters
+stream toppar.inp
+
+! create the molecule
+read sequence tmp 1
+generate AAAA setup first none last none warn
+
+! write out energies on pes
+open write form unit 90 name surf.dat
+
+! use qm structures as initial for optimization
+set fuseqmstr = 1   
+
+stream term.list
+set iterm = 1
+
+! loop over terms
+label loopterm
+    ! remove all constraints
+    cons cldh   
+    update inbfrq -1 ihbfrq 0 -
+    atom switch vatom vfswitch cutnb 999.0 ctofnb 900.0 ctonnb 800.0
+
+    stream @{term@@iterm}".inp"
+    define atm1 sele type @A1 end
+    define atm2 sele type @A2 end
+    if @termtype .ne. B then 
+        define atm3 sele type @A3 end
+    endif
+    if @termtype .eq. D then
+        define atm4 sele type @A4 end
+    endif
+
+    set istr = 0
+    set i = 1
+    ! loop over pes points  
+    label pespoint
+        if @fuseqmstr .eq. 1 then
+            ! read qm structure for the pes point
+            open read card unit 4 name bond/@{term@@iterm}/pdb/@istr.pdb
+            read coor pdb unit 4
+            close unit 4                                      
+            coor copy comp
+        else
+            readempirical structure for each scan
+            open read card unit 10 name "emp.pdb"
+            read coor pdb unit 10
+        endif
+   
+        ! bonds
+        if @termtype .eq. B then 
+            quick AAAA 1 @a1 AAAA 1 @a2
+            set vqm = ?dist 
+            ! apply constraint
+            mmfp
+            geo maxgeo 100 sphere  distance -
+                harmonic symmetric force 500000.0 droff @va@@i -
+                select atm1 end select atm2 end
+            end
+        endif
+        ! angles
+        if @termtype .eq. A then                                       
+            quick AAAA 1 @a1 AAAA 1 @a2 AAAA 1 @a3
+            set vqm = ?thet           
+            ! apply constraint
+            mmfp                                                                 
+            geo maxgeo 100 sphere  angle -                                                 
+               harmonic symmetric force 500000.0 tref @va@@i dtoff 0.0 -       
+               select atm1 end select atm2 end select atm3 end                   
+            end                                                                  
+        endif
+        ! dihedrals and impropers
+        if @termtype .eq. D then                                       
+            quick AAAA 1 @a1 AAAA 1 @a2 AAAA 1 @a3 AAAA 1 @a4
+            set vqm = ?phi           
+            ! apply constraint
+            mmfp                                                                                                                    
+            geo maxgeo 100 sphere  dihedral -                                                   
+               harmonic symmetric force 10000.0 tref @va@@i dtoff 0.0 -         
+               select atm1 end select atm2 end -
+               select atm3 end select atm4 end                                     
+            end                                                                  
+        endif           
+
+        ! minimization
+        skip excl all
+        mini sd     nstep 200 nprint 50
+        mini powell nstep 200 nprint 50
+        mini abnr  nstep  200 nprint 50
+         
+        ! mesure structural deviations
+        coor orient rms comp sele .not. type lp* end
+        set strrms = ?rms
+         
+        ! save the emprical structure
+        set fsavestruct = 1
+        if @fsavestruct eq 1 then
+            open write card unit 3 name results/@{term@@iterm}-@istr.pdb
+            write coor pdb unit 3
+            * ?strrms
+
+            open write card unit 3 name results/@{term@@iterm}-@istr.card
+            write coor card unit 3
+            close unit 3
+            
+        endif
+
+        ! get energy without constraints
+        skip incl all excl bonds angle urey dihe impr vdw elec
+        energy
+        set pesenergy = ?ener
+        ! get new term values
+        if @termtype .eq. B then
+            quick AAAA 1 @a1 AAAA 1 @a2
+            set vemp = ?dist
+        endif
+        if @termtype .eq. A then
+            quick AAAA 1 @a1 AAAA 1 @a2 AAAA 1 @a3
+            set vemp = ?thet
+        endif
+        if @termtype .eq. D then         
+            quick AAAA 1 @a1 AAAA 1 @a2 AAAA 1 @a3 AAAA 1 @a4
+            set vemp = ?phi                                    
+        endif
+         
+        ! compute deviation for forces
+        ! read qm forces
+        !!open unit 4 read card name bond/@{term@@iterm}/forces/@istr.pdb
+        !!read coord pdb unit 4 resid comp
+        !!close unit 4
+
+        !!scalar x = dx
+        !!scalar y = dy
+        !!scalar z = dz
+
+        !!coor rms sele .not. type lp* end
+        !!set forcerms = ?rms
+        set forcerms = 0.0
+
+        !write energy
+        write title unit 90
+        *@vemp @pesenergy @strrms @forcerms @{term@@iterm}
+        *
+    
+        mmfp
+        geo reset
+        end      
+     
+        incr istr by 1
+        incr i by 1    
+    if @istr .lt. @NP goto pespoint
+
+    incr iterm by 1
+if @iterm .le. @nterms goto loopterm
+close unit 90
+
+stop

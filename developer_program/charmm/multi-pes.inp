@@ -1,0 +1,110 @@
+* perform adiabatic scan
+* 
+
+! read topology and parameters
+stream toppar.inp
+
+! create the molecule
+read sequence tmp 1
+generate AAAA setup first none last none warn
+
+! write out energies on pes
+open write form unit 90 name surf-multi-pes.dat
+
+! use qm structures as initial for optimization
+set fuseqmstr = 1
+
+update inbfrq -1 ihbfrq 0 -
+atom switch vatom vfswitch cutnb 999.0 ctofnb 900.0 ctonnb 800.0
+
+stream restraints.str
+
+stream @{termname}.str
+
+set istr = 1
+
+! loop over pes points  
+label pespoint
+    if @fuseqmstr .eq. 1 then
+        ! read qm structure for the pes point
+        open read card unit 4 name bond/@{termname}/pdb/@{pdbid@@istr}.pdb
+        read coor pdb unit 4
+        close unit 4
+        coor copy comp
+    else
+        readempirical structure for each scan
+        open read card unit 10 name "emp.pdb"
+        read coor pdb unit 10
+    endif
+
+    ! apply constraints
+    set idihe = 1
+    label diheconstraint
+        define atm1 sele type @{a1_@@idihe} end
+        define atm2 sele type @{a2_@@idihe} end
+        define atm3 sele type @{a3_@@idihe} end
+        define atm4 sele type @{a4_@@idihe} end
+        !!! quick AAAA 1 @{a1d@@idihe} AAAA 1 @{a2d@@idihe} AAAA 1 @{a3d@@idihe} AAAA 1 @{a4d@@idihe}
+        !!!set vqm = ?phi
+        ! apply constraint
+        mmfp
+        geo maxgeo 100 sphere  dihedral -
+            harmonic symmetric force 100000.0 tref @{va@@istr_@@idihe} dtoff 0.0 -
+            select atm1 end select atm2 end -
+            select atm3 end select atm4 end
+        end
+        incr idihe by 1
+    if @idihe .le. @ND goto diheconstraint
+
+    ! minimization
+    skip excl all
+    mini sd     nstep 200 nprint 50
+    mini powell nstep 200 nprint 50
+    mini abnr   nstep 500 nprint 50
+     
+    ! mesure structural deviations
+    coor orient rms comp sele .not. type lp* end
+    set strrms = ?rms
+     
+    ! save the emprical structure
+    set fsavestruct = 1
+    if @fsavestruct eq 1 then
+        open write card unit 3 name results/@{termname}-@{pdbid@@istr}.pdb
+        write coor pdb unit 3
+        * ?strrms
+    endif
+
+    ! get energy without constraints
+    skip incl all excl bonds angle urey dihe impr vdw elec
+    energy
+    set pesenergy = ?ener
+    
+    !!get MM values
+    !!quick AAAA 1 @a1 AAAA 1 @a2 AAAA 1 @a3 AAAA 1 @a4
+    !!set vemp = ?phi     
+    !!! compute deviation for forces
+    !!! read qm forces
+    !!!open unit 4 read card name bond/@{term@@iterm}/forces/@istr.pdb
+    !!!read coord pdb unit 4 resid comp
+    !!!close unit 4
+    !!!scalar x = dx
+    !!!scalar y = dy
+    !!!scalar z = dz
+    !!!coor rms sele .not. type lp* end
+    !!!set forcerms = ?rms
+    !!! @strrms @forcerms @{term@@iterm}
+
+    !write energy
+    write title unit 90
+    *@pesenergy 
+    *
+
+    mmfp
+    geo reset
+    end        
+    
+    incr istr by 1 
+if @istr .le. @NP goto pespoint
+
+
+stop
