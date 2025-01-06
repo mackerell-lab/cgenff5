@@ -4,6 +4,7 @@ For bonded terms optimization target data included:
  - QM minimized geometry
  - If available, QM minimized geometries and energies after identifying additional minima with CREST.
     During optimization of bonded terms, restraints on rotatable dihedrals were applied.
+    However, when comparing the different parameter versions, restraints were removed to generate additional results. 
  - QM bonded term equilibrium value
  - QM Potential Energy Surface Scans with restrains on rotatable bonds if needed
 
