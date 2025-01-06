@@ -11,7 +11,4 @@ This repository contains supplementary information on molecules and data utilize
 | experimental_validation | Comprises data points used to generate figures and tables for validating CGenFF v5.0 against experimental density, heat of vaporization, and hydration free energy |
 | fda_validation | Includes data points used to generate figures and tables for validating CGenFF v5.0 against QM data for a set of FDA-approved drugs |
 
-<<<<<<< HEAD
-=======
 
->>>>>>> refs/remotes/origin/main
