@@ -1,0 +1,3 @@
+zinc_optimized.top = optimized charges, topologies and IC obtained from QM opt structures
+param.prm = optimized bonded parameters
+c36 =  CHARMM36/CGENFF topology and parameter files used during optimization

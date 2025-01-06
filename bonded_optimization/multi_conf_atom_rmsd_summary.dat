@@ -1,0 +1,2 @@
+Atom_RMSD_all_conf:ini opt reo ret Atom_RMSD_per_mol:ini opt reo ret Atom_RMSD_all_conf_no_res:ini opt reo ret Atom_RMSD_per_mol_no_res:ini opt reo ret
+0.134929 0.112399 0.111938 0.111667	0.129655 0.117143 0.116953 0.116644	0.374418 0.313931 0.313638 0.312297	0.338205 0.275167 0.274827 0.273577
