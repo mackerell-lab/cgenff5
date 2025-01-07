@@ -20,7 +20,6 @@ update inbfrq -1 ihbfrq 0 -
 atom switch vatom vfswitch cutnb 999.0 ctofnb 900.0 ctonnb 800.0
 
 ! constraints
-!!stream restraints.str
 stream target-str.str
 
 ! loop over structures 
@@ -96,14 +95,3 @@ label strs
 if @istr .lt. @nstr goto strs
 
 stop
-
-        !!open write card unit 3 name results/@{term@@iterm}-@istr.card
-        !!write coor card unit 3
-        !!close unit 3
-
-    ! remove all constrants and read new
-    !!!cons cldh
-    !!cons rmsd  clear
-    !!cons rmsd  comp  force 500.0  boffset 0.0
-
-

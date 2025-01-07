@@ -18,11 +18,9 @@ update inbfrq -1 ihbfrq 0 -
 atom switch vatom vfswitch cutnb 999.0 ctofnb 900.0 ctonnb 800.0
 
 stream restraints.str
-
 stream @{termname}.str
 
 set istr = 1
-
 ! loop over pes points  
 label pespoint
     if @fuseqmstr .eq. 1 then
@@ -44,8 +42,6 @@ label pespoint
         define atm2 sele type @{a2_@@idihe} end
         define atm3 sele type @{a3_@@idihe} end
         define atm4 sele type @{a4_@@idihe} end
-        !!! quick AAAA 1 @{a1d@@idihe} AAAA 1 @{a2d@@idihe} AAAA 1 @{a3d@@idihe} AAAA 1 @{a4d@@idihe}
-        !!!set vqm = ?phi
         ! apply constraint
         mmfp
         geo maxgeo 100 sphere  dihedral -
@@ -78,21 +74,6 @@ label pespoint
     skip incl all excl bonds angle urey dihe impr vdw elec
     energy
     set pesenergy = ?ener
-    
-    !!get MM values
-    !!quick AAAA 1 @a1 AAAA 1 @a2 AAAA 1 @a3 AAAA 1 @a4
-    !!set vemp = ?phi     
-    !!! compute deviation for forces
-    !!! read qm forces
-    !!!open unit 4 read card name bond/@{term@@iterm}/forces/@istr.pdb
-    !!!read coord pdb unit 4 resid comp
-    !!!close unit 4
-    !!!scalar x = dx
-    !!!scalar y = dy
-    !!!scalar z = dz
-    !!!coor rms sele .not. type lp* end
-    !!!set forcerms = ?rms
-    !!! @strrms @forcerms @{term@@iterm}
 
     !write energy
     write title unit 90
@@ -105,6 +86,5 @@ label pespoint
     
     incr istr by 1 
 if @istr .le. @NP goto pespoint
-
 
 stop

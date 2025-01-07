@@ -53,10 +53,3 @@ write  coor pdb unit 10
 
 stop
 
-
-!!open write card unit 9 name "molecule.psf"
-!!write psf card unit 9
-!!close unit 9
-
-!open write form unit 4 name first.dat
-!test first tol 0.0 unit 4
