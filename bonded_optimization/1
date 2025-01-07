@@ -1,9 +1,0 @@
-zinc_list=$(awk '{print $1}' ../zinc_molecules/zinc_names.list)
-files="A_eq_values.dat     D_eq_values.dat          energy_multi_conf_no_cons.dat           energy_multi_conf_summary.dat  in-ring_ener_all.dat  multi_conf_atom_rmsd.dat                  multi_conf_atom_rmsd_summary.dat angle_ener_all.dat  dihe_ener_rigid_all.dat  energy_multi_conf_no_cons_summary.dat   eq_values_summary.dat          min_geom_cons.dat      multi_conf_atom_rmsd_no_cons.dat          pes_energy_summary.dat B_eq_values.dat     dihe_ener_soft_all.dat   energy_multi_conf_rmsd_mol.dat          I_eq_values.dat                min_geom_no_cons.dat  multi_conf_atom_rmsd_per_mol.dat          pes_scaled_energy_summary.dat bond_ener_all.dat   energy_multi_conf.dat    energy_multi_conf_rmsd_mol_no_cons.dat  impr_ener_all.dat              min_geom_summary.dat  multi_conf_atom_rmsd_per_mol_no_cons.dat"
-for i in ${zinc_list}; do
-    name=$(grep -w $i ../zinc_molecules/zinc_names.list | awk '{print $2}')
-    for f in $files; do
-        sed -i "s/\b$i\b/$name/g" "$f"
-    done
-done
-
