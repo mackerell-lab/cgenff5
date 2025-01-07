@@ -1,0 +1,35 @@
+* TMP
+*
+36 1
+
+RESI TMP               0.000
+GROUP
+ATOM F1      FGR1     -0.172
+ATOM C2      CG2R66    0.058
+ATOM C3      CG2R61   -0.009
+ATOM C4      CG2R61   -0.352
+ATOM C5      CG302     0.624
+ATOM F6      FGA3     -0.176
+ATOM F7      FGA3     -0.176
+ATOM F8      FGA3     -0.176
+ATOM C9      CG2R61   -0.031
+ATOM N10     NG2R61   -0.110
+ATOM C11     CG2R63    0.394
+ATOM S12     SG2D1    -0.542
+ATOM H13     HGR62     0.164
+ATOM H14     HGR62     0.201
+ATOM H15     HGP1      0.303
+
+BOND       F1      C2
+BOND       C2      C3      C2     C11
+BOND       C3      C4      C3     H13
+BOND       C4      C5      C4      C9
+BOND       C5      F6      C5      F7      C5      F8
+BOND       C9     N10      C9     H14
+BOND      N10     C11     N10     H15
+BOND      C11     S12
+IMPR      C11      C2     N10     S12
+
+
+END
+

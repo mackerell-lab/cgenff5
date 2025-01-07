@@ -1,0 +1,15 @@
+! For symmetric positions, atoms need to have the same charge. For e.g. F6, F7, F8
+! the keyword "q" can be used for this task. Value "1.00" is used to set the ratio between the two atoms
+q F6 F7 1.000
+q F7 F8 1.000
+! Occasionally, certain water orientations must be eliminated because of steric hindrance.
+! In this example, for atom F1 orientations "0.0", "90.0" and "270.0" are removed by setting thei contribution to "0.0"
+s F1 0.0 0.0
+s F1 90.0 0.0
+s F1 270.0 0.0
+! The molecule contains S atoms for which MP2 QM water interactions were peformed
+! For each water orientation, the interaction energy and water distance is provided
+wdata S12 0 -1.893105724724770667 2.7881
+wdata S12 90 -1.636135924403780707 2.8141
+wdata S12 180 -1.435245500513748077 2.8241
+wdata S12 270 -1.636129649303749332 2.8134

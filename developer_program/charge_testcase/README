@@ -1,0 +1,7 @@
+# Testcase to perform MM calculation for optimized charges and compare to QM
+# 3-Fluoro-2-mercapto-5-(trifluoromethyl)pyridine (CGenFF: 2300R6) from Figure 2
+# To run use:
+../developer_charge.exe charge.inp
+
+# charge.inp contains all the settings for optimization
+# charge.rel contains additional settings for optimization

@@ -1,0 +1,85 @@
+#####################################################
+########### General parameters ######################
+
+# Partial charges of the molecule
+topology ../../toppar/c36/top_all36_cgenff.rtf
+topology ../../toppar/c36/top_all36_na.rtf
+topology opttop.inp
+
+# Parameters
+param ../../toppar/c36/par_all36_prot.prm
+param ../../toppar/c36/par_all36_cgenff.prm
+param ../../toppar/c36/toppar_water_ions.str
+param ../../toppar/c36/par_all36_na.prm
+param start.top
+
+# Ab-inito level of theory to optimize molecule, compute electric potentials and MK charges
+QMTheory MP2/6-31G* SCF=Tight
+
+# Number of processors for gaussian jobs
+gausscommand  %mem=10GB
+NProc 4
+
+#####################################################
+## Read topology and coordinates; optimize geometry #
+
+# read an initial topology file
+# partial charges in this file define water orientations
+ReadTop start.top
+
+# read initial coordinates 
+ReadCoorPDB start.pdb
+
+# optimize molecule and use optimized geometry
+OptimizeGeometry
+
+# generate additional bonds, not present in the topology file
+GenerateBonds 
+
+# compute MK charges and electrostatic potentials
+Population
+
+# Ab-inito level of theory for water interactions
+QMTheory HF/6-31G*
+
+# Perform a HF single point calculation of the minimized QM geometry
+singlepoint 
+
+# write topology with added bonds and with partial charges used to produce the output 
+WriteTop top.inp
+
+#####################################################
+# Optimize charges (for bonded terms see the other testcase)
+optcharge
+
+# If not commented, MK charges are considered initial partial charges 
+#useqpop yes
+
+# Weights for the optimization cost function
+weightesppot  0.7 
+weightdipolemoment 1.0
+
+# Specify atom names and the number of water orientations for molecule water interactions
+probe F1 4
+probe F6 4
+probe F7 4
+probe F8 4
+probe N10 4
+probe S12 4
+probe H13 2
+probe H14 2
+probe H15 4
+
+# Initial partial charges to start optimization from
+readinitcharge opttop.inp
+
+# If "single" is not commented, optimization is not performed
+# Instead, MM calculations are done using partial charges from "readinitcharge"
+single
+
+end
+
+# write topology with optimized charges
+writetop top.inp
+
+stop
