@@ -1,0 +1,153 @@
+##############################################################
+#############Setup parameters and topologies##################
+# Topology
+topology ../../toppar/c36/top_all36_prot.rtf
+topology ../../toppar/c36/top_all36_na.rtf
+topology ../../toppar/c36/toppar_water_ions.str
+topology ../../toppar/c36/top_all36_carb.rtf
+topology ../../toppar/c36/top_all36_cgenff.rtf
+topology start.top
+
+# Parameters to be used that don't require optimization
+param ../../toppar/c36/par_all36_prot.prm
+param ../../toppar/c36/toppar_water_ions.str
+param ../../toppar/c36/par_all36_na.prm
+param ../../toppar/c36/par_all36_carb.prm
+param ../../toppar/c36/par_all36_cgenff.prm
+param param_new.prm
+##############################################################
+
+# QM theory for PES scans and geometry minimizations
+QMTheory MP2/6-31G* SCF=Tight
+
+# Number of processors for gaussian jobs
+gausscommand  %mem=8GB
+NProc 4
+
+# read topology file containing partial charges and bond order
+ReadTop top.inp
+
+# read initial coordinates
+##ReadCoorPDB start.pdb
+ReadCoorXYZ initial.xyz
+
+# optimize molecule and read optimized geometry
+OptimizeGeometry
+
+# generate additional bonds, not present in the topology file
+##GenerateBonds
+
+# Read nonbonded parameters from the param files
+readnbond
+
+# Optimize bonded parameters
+optintra
+harmo on
+
+# CHARMM scripts files
+charmm_input ../../developer_program/charmm/
+
+# include bonds, angles, dihedral angles, 
+# comment if you want just to optimize bonds for example
+incl bond
+incl angle
+incl dihe
+
+# Read initial parameters that will be optimized
+# Parameters present in "Setup parameters and topologies" will not be optimized
+ReadInitial ../../toppar/param.prm 
+
+
+sfactor {
+    fd    0.005
+    sp    1.0
+    str   1.0
+    dihe  0.0
+    restr 0.0
+}
+
+scale freq 1.0
+
+# Weights for optimization cost function
+weight {
+    bond  k 0.0
+    angle k 0.0
+dihe  k 0.15
+    impr  k 0.0
+}
+
+# read eq values from qm geometry
+bondfromstructure off
+anglefromstructure off
+
+# determine force constants and exit if not commented
+#fc
+
+# Number of PES points to define force constants
+npespoints 5
+
+
+# Rotatable dihedrals are defined by four atom names
+# rotatable dihedrals 
+soft
+fix O1 N2 C4 C16
+fix C16 N15 C13 C7
+fix C7 C9 C10 C11
+fix C9 C10 C11 C12
+fix N15 C13 C7 N6
+end
+
+# scan soft dihedrals not in rings
+soft
+dihe O1 N2 C4 C16
+fix C16 N15 C13 C7
+fix C7 C9 C10 C11
+fix C9 C10 C11 C12
+fix N15 C13 C7 N6
+end
+
+# scan soft dihedrals in rings
+multisoft
+fix O1 N2 C4 C16
+dihe C16 N15 C13 C7
+fix C7 C9 C10 C11
+fix C9 C10 C11 C12
+fix N15 C13 C7 N6
+end
+
+multisoft
+fix O1 N2 C4 C16
+fix C16 N15 C13 C7
+dihe C7 C9 C10 C11
+fix C9 C10 C11 C12
+fix N15 C13 C7 N6
+end
+
+multisoft
+fix O1 N2 C4 C16
+fix C16 N15 C13 C7
+fix C7 C9 C10 C11
+dihe C9 C10 C11 C12
+fix N15 C13 C7 N6
+end
+
+multisoft
+fix O1 N2 C4 C16
+fix C16 N15 C13 C7
+fix C7 C9 C10 C11
+fix C9 C10 C11 C12
+dihe N15 C13 C7 N6
+end
+
+# Phase inversion not allowed
+# Instead the force constant can take negatibve values
+#invertno
+
+
+# To optimize terms "single" command has to be commented
+# Otherwise, MM calculations are done with the imput parameters and compared to QM without optimization
+single
+
+run
+
+stop
